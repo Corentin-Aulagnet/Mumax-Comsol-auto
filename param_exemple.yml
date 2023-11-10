@@ -1,0 +1,22 @@
+#Example file for the parameters used to simulate a SHNO from comsol to mumax 
+---
+Simulation_Name: "A_simulation_name" #Please use a snake_format or a camelFormat
+#Flag, True if Comsol needs to run, will generate a spin current file, an Oersted field file and a geometery file
+Simulate-Comsol : False
+  Oersted_file:
+  J_file : 
+  geom_file:
+override : True #Allows to override the comsol simulation files
+comsol_file : "C:\\Users\\coren\\Documents\\ECOLE\\THESE\\_ma_thèse\\Work\\Comsol\\50nm\\nano_constriction_50nm.mph"
+
+cell-number : 128
+input-current : 1.2[mA] #The current has to be formated as follows value[unit]
+
+#You can then list all the mumax keys you want to be replaced to generate the scripts, eg.
+Mumax_template : "C:\\Users\\coren\\Documents\\ECOLE\\THESE\\_ma_thèse\\Work\\Mumax\\SHNO_template_test.mx3"
+mumax_params :
+  Field_Strength : 0.7
+  In_Plane_Angle : 30
+
+...
+#You can add multiple simulation by adding more file like this

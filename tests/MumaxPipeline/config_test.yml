@@ -1,0 +1,14 @@
+---
+Simulation_Name: "Test_MumaxPipeline" #Please use a snake_format or a camelFormat
+#Flag, True if Comsol needs to run, will generate a spin current file, an Oersted field file and a geometery file
+
+cell_number : 512
+override : True
+geom_file : "C:/Users/coren/Documents/ECOLE/THESE/_ma_these/Work/_scripts/Mumax-Comsol-auto/tests/MumaxPipeline/geom_512.png"
+#You can then list all the mumax keys you want to be replaced to generate the scripts, eg.
+Mumax_template : "C:/Users/coren/Documents/ECOLE/THESE/_ma_these/Work/_scripts/Mumax-Comsol-auto/tests/MumaxPipeline/mumax_script_test.mx3"
+
+mumax_params:
+  K1 : 1e5
+  K2 : 8e5
+...

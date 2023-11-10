@@ -1,0 +1,11 @@
+Mumax_template: C:/Users/coren/Documents/ECOLE/THESE/_ma_these/Work/_scripts/Mumax-Comsol-auto/tests/ComsolMumaxPipeline/SHNO_template.mx3
+Simulate-Comsol: true
+Simulation_Name: test_Comsol-Mumax-Pipeline
+override: true
+cell-number: 512
+comsol_file: C:/Users/coren/Documents/ECOLE/THESE/_ma_these/Work/_scripts/Mumax-Comsol-auto/tests/ComsolMumaxPipeline/nano_constriction_50nm.mph
+input-current: 1.2[mA]
+mumax_params:
+  Field_Strength: 0.7
+  In_Plane_Angle: 30
+  Out_of_plane_Angle: 60
