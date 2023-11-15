@@ -24,7 +24,7 @@ GammaLL = 29.53e9
 fixedlayer = vector(-1, 0, 0)
 
 //1st axis
-K1 := 1e5
+K1 := 7e5
 u1 := ConstVector(0,1,0)
 prefactor1 := Const(2*K1/Msat.Average())
 customAnisField1 := Mul(prefactor1,Mul(Dot(m,u1),u1))
@@ -32,7 +32,7 @@ AddFieldTerm(customAnisField1)
 AddEdensTerm(Mul(Const(-K1),Mul(Dot(m,u1),Dot(m,u1))))
 
 //2nd axis
-K2 := 8e5
+K2 := 7e5
 u2 := ConstVector(0,0,1)
 prefactor2 := Const(2*K2/Msat.Average())
 customAnisField2 := Mul(prefactor2,Mul(Dot(m,u2),u2))

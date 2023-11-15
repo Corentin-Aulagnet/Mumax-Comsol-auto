@@ -3,6 +3,6 @@ Simulation_Name: Test_MumaxPipeline
 cell_number: 512
 geom_file: C:/Users/coren/Documents/ECOLE/THESE/_ma_these/Work/_scripts/Mumax-Comsol-auto/tests/MumaxPipeline/geom_512.png
 mumax_params:
-  K1: 1e5
-  K2: 8e5
+  K1: 7e5
+  K2: 7e5
 override: true

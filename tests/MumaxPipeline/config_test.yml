@@ -9,6 +9,6 @@ geom_file : "C:/Users/coren/Documents/ECOLE/THESE/_ma_these/Work/_scripts/Mumax-
 Mumax_template : "C:/Users/coren/Documents/ECOLE/THESE/_ma_these/Work/_scripts/Mumax-Comsol-auto/tests/MumaxPipeline/mumax_script_test.mx3"
 
 mumax_params:
-  K1 : 1e5
-  K2 : 8e5
+  K1 : 7e5
+  K2 : 7e5
 ...
