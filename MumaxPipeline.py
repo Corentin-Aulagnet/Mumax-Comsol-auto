@@ -6,12 +6,16 @@ from ComputeComsol import computeComsol
 from yaml import Loader, load_all,dump
 from datetime import datetime
 from termcolor import colored
-from ReportMaker import Reporter
+from ReportMaker import Reporter,Simulation
 from multiprocessing import Process
+from multiprocessing.managers import BaseManager
 import shutil
 import argparse
-
-def StartPipeline(config_file,interval,timeout,test=False):
+# custom manager to support custom classes
+class CustomManager(BaseManager):
+    # nothing
+    pass
+def StartPipeline(config_file,interval,timeout,global_simulation_path=None,test=False):
     #Read the yaml config file
     yml_stream =  open(config_file, 'r')
     Debug.Log("Reading the yaml config file")
@@ -21,20 +25,28 @@ def StartPipeline(config_file,interval,timeout,test=False):
     Debug.Log("Found {} simulations to run".format(number_of_documents),'green')
     yml_stream =  open(config_file, 'r')
     yml = load_all(Loader=Loader, stream = yml_stream)
+    CustomManager.register('Reporter',Reporter)
+    manager = CustomManager()
+    manager.start()
     #Generate the folders
-    global_simulation_path =  datetime.today().strftime('%Y-%m-%d')
+    if global_simulation_path == None or global_simulation_path == 'None':
+        global_simulation_path =  datetime.today().strftime('%Y-%m-%d')
     if test : global_simulation_path = "tests"
-    
     try:
         os.mkdir(global_simulation_path)
     except FileExistsError:
         Debug.LogWarning("The folder {} already exists. More simulation today huh?".format(global_simulation_path))
+    
     #Starting email reader
-    reporter = Reporter(global_simulation_path,timeout,interval)
+    updateHTML = True
+    reporter = manager.Reporter(global_simulation_path,timeout,interval,updateHTML)
+    #reporter = Reporter(global_simulation_path,timeout,interval,updateHTML)
+
     p = Process(target=reporter.processEmails, args=(global_simulation_path,interval,timeout,))
     p.start()
     #For every simulation
     index=1
+    Debug.Log("Starting simulations in {}".format(global_simulation_path))
     for data in yml:
         simulation_name = data["Simulation_Name"]
         override_flag = data["override"]
@@ -76,9 +88,12 @@ def StartPipeline(config_file,interval,timeout,test=False):
         #run mumax3
         Debug.Log("Running Mumax simulation")
         os.system("ssh -p 5097 anx13@193.54.9.82 cd Mumax_simulations/{};sbatch RunMUMAX3.slurm".format(simulation_path))
+        reporter.addTracker(Simulation(simulation_name,simulation_path))
+        if(updateHTML):reporter.writeHTML()
         print("\n")
         index += 1
     p.join()
+    manager.close()
 
 
 if __name__ == "__main__":
@@ -89,6 +104,7 @@ if __name__ == "__main__":
     parser.add_argument('input_file', type=str, help='Input file path')
     parser.add_argument('-t','--checkTimeout',default=10800,type = int,help='Timeout of the email checking thread in seconds')
     parser.add_argument('-f','--checkFrequency',default=600,type = int,help='Frequency of the email checking thread in seconds')
+    parser.add_argument('-p','--path',default=None,type = str,help='Global path for the simulations')
     # Parse command line arguments
     args = parser.parse_args()
 
@@ -96,8 +112,9 @@ if __name__ == "__main__":
     config_file = args.input_file
     interval = args.checkFrequency
     timeout = args.checkTimeout
+    path = args.path
 
-    StartPipeline(config_file,interval,timeout)
+    StartPipeline(config_file,interval,timeout,path)
 
 
 

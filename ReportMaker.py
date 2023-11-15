@@ -27,11 +27,12 @@ class Reporter:
         self.reportPageCSS = global_simulation_path+'/html/main_style.css'
         self.updateHTML = updateHTML
         if(self.updateHTML):
+            Debug.Log("Updating the web page at {}".format(self.reportPageHTML),'blue')
             self.startHTML()
 
     def startHTML(self):
         try:
-            os.mkdir(global_simulation_path+'/html')
+            os.mkdir(self.global_simulation_path+'/html')
         except FileExistsError:
             pass
         f=open(self.reportPageHTML,'w')
@@ -45,14 +46,15 @@ class Reporter:
     def updateTrackerStatus(self,simulationName,newStatus):
         for sim in self.trackedSimulations:
             if sim.name == simulationName:
-                sim.status
+                sim.status = newStatus
 
     def processEmails(self,global_simulation_path,interval = 600,timeout = 10800):#timeout is 3h by default, interval is 10min by default
+        Debug.Log("Starting email reading thread",'blue')
         startTime = time.time()
         lastCheckTime = time.time()
         creds = connectToGoogleAPI()
         shortcut = False
-        Debug.Log("Starting email reading thread",'blue')
+        
         nSimsFinished = 0
         while (time.time() - startTime) < timeout:
             #continue reading emails
@@ -72,50 +74,43 @@ class Reporter:
                             try:
                                 os.mkdir("{}/results".format(simulation_path) )
                             except FileExistsError:
-                                Debug.LogWarning("{} already has a result folder")
+                                Debug.LogWarning("{} already has a result folder".format(simulation_path))
                             os.system("scp -P 5097 anx13@193.54.9.82:Mumax_simulations/{0}/output_{1}/{1}.out/table.txt {0}/results/table.txt".format(simulation_path,run['jobName']))
-                    
-                            os.system("python ../_scripts/plot_main.py mhLoop -d {1} -f {0}/results/table.txt -o graphs/{2}.png".format(simulation_path,run['jobName'][-1],run['jobName']))#Careful with it
+                            self.updateTrackerStatus(run['jobName'],run['status'])
+                            #os.system("python ../_scripts/plot_main.py mhLoop -d {1} -f {0}/results/table.txt -o graphs/{2}.png".format(simulation_path,run['jobName'][-1],run['jobName']))#Careful with it
                         else:
                             #something wrong happened
                             Debug.LogError("Something wrong happened with run {} runtime was {}".format(run['jobName'],run['runTime']))
-                            Debug.LogError("Exit code : {}, status {}".format(run['exitCode'],run['status']))                 
+                            Debug.LogError("Exit code : {}, status {}".format(run['exitCode'],run['status']))
+                            self.updateTrackerStatus(run['jobName'],run['status'])                 
                 else:
                     Debug.Log("Nothing to download",'blue')
+                if(self.updateHTML):self.writeHTML()
         Debug.Log("Done checking emails",'blue')
-        self.writeHTML()
+        
 
     def writeHTML(self):
         with open(self.reportPageCSS,'w') as f:
             f.write("""   
-             table.tableSection {
-                display: table;
-                width: 100%;
                 
+			table.tableSection {
+                
+				width: 100%;
+				border-collapse: collapse;
+				border: 1px solid black;
             }
-            table.tableSection th, table.tableSection td {
-                border: 1px solid black;
-                border-collapse: collapse;
-            }
-            table.tableSection thead, table.tableSection tbody {
-                float: left;
-                width: 100%;
-                text-align : left;
-                border-right: 1px solid black;
-            }
-            table.tableSection tbody {
+			table.tableSection th,td{
+				border: 1px solid black
+			}
+			table.tableSection tbody {
                 overflow: auto;
-                height: 150px;
+                height: 50px;
             }
-            table.tableSection tr {
-                overflow: auto;
-                width: 100%;
-                display: table;
-                text-align: left;
-            }
-            table.tableSection tr,table.tableSection th {
-                width: 300px;
-            }
+			table.tableSection td{
+				text-align : center
+			}
+            
+    
     """)
         doc = dominate.document(title='Dominate your HTML')
 
@@ -142,9 +137,14 @@ class Reporter:
                     with tbody():
                         for index,sim in enumerate(self.trackedSimulations):
                             r = tr()
+                            
                             r.add(td(sim.name))
-                            r.add(td(a(sim.path,sim.path)))
-                            r.add(td(sim.status))
+                            r.add(td(a(sim.path,href=sim.path)))
+                            d = td(sim.status)
+                            if(sim.status == "COMPLETED"): d['style']='color:green;'
+                            if(sim.status == "FAILED"): d['style']='color:red;'
+                            if(sim.status == "TIMEOUT"): d['style']='color:orange;'
+                            r.add(d)
                             r.add(td(sim.slurmId))
 
         with open(self.reportPageHTML,'w') as f:

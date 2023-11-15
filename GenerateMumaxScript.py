@@ -1,6 +1,7 @@
 from string import Template
 from ComsolToovf import CRLFToLF
 from utils import Debug
+
 def findKeysInTemplate(template):
     lines = template.readlines()
     keys=[]
